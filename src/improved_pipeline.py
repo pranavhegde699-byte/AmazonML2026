@@ -329,7 +329,7 @@ def run_improved_pipeline():
 
     print("\n[3] Train/Val split (80/20)...")
     np.random.seed(42)
-    s1_ids = s1_train['entity_id'].values.copy()
+    s1_ids = s1_train['entity_id'].to_numpy(dtype=str).copy()
     np.random.shuffle(s1_ids)
     split_idx    = int(0.8 * len(s1_ids))
     train_s1_ids = set(s1_ids[:split_idx])
