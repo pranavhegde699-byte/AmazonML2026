@@ -1,0 +1,118 @@
+{
+  "ground_truth": {
+    "total_rows": 2206821,
+    "singletons_zero_match": 123247,
+    "one_match": 119157,
+    "multiple_matches": 1964417,
+    "total_positive_matches": 7638365,
+    "avg_matches_per_s1": 3.4612526344456573
+  },
+  "train_source1.tsv": {
+    "total_rows": 2206821,
+    "columns": [
+      "entity_id",
+      "business_name",
+      "business_address",
+      "country"
+    ],
+    "missing_values": {
+      "entity_id": 0,
+      "business_name": 0,
+      "business_address": 0,
+      "country": 0
+    },
+    "empty_strings": {
+      "entity_id": 0,
+      "business_name": 0,
+      "business_address": 0,
+      "country": 0
+    },
+    "duplicate_ids": 0,
+    "country_distribution": {
+      "US": 1323633,
+      "India": 883188
+    },
+    "avg_name_len": 24.03440333402664,
+    "avg_address_len": 52.06621289175697
+  },
+  "train_source2.tsv": {
+    "total_rows": 5034616,
+    "columns": [
+      "entity_id",
+      "business_name",
+      "business_address",
+      "country"
+    ],
+    "missing_values": {
+      "entity_id": 0,
+      "business_name": 2,
+      "business_address": 168967,
+      "country": 0
+    },
+    "empty_strings": {
+      "entity_id": 0,
+      "business_name": 0,
+      "business_address": 0,
+      "country": 0
+    },
+    "duplicate_ids": 0,
+    "country_distribution": {
+      "US": 3016817,
+      "India": 2017799
+    },
+    "avg_name_len": 25.10358410793757,
+    "avg_address_len": 47.831172984323366
+  },
+  "train_source3.tsv": {
+    "total_rows": 5285603,
+    "columns": [
+      "entity_id",
+      "business_name",
+      "business_address",
+      "country"
+    ],
+    "missing_values": {
+      "entity_id": 0,
+      "business_name": 13,
+      "business_address": 175916,
+      "country": 0
+    },
+    "empty_strings": {
+      "entity_id": 0,
+      "business_name": 0,
+      "business_address": 0,
+      "country": 0
+    },
+    "duplicate_ids": 0,
+    "country_distribution": {
+      "US": 3170056,
+      "India": 2115547
+    },
+    "avg_name_len": 25.202200889588486,
+    "avg_address_len": 48.32271918025507
+  },
+  "test_source1.tsv": {
+    "total_rows": 1732544,
+    "country_distribution": {
+      "India": 809986,
+      "US": 663106,
+      "France": 259452
+    }
+  },
+  "test_source2.tsv": {
+    "total_rows": 4887273,
+    "country_distribution": {
+      "India": 2312565,
+      "US": 1871330,
+      "France": 703378
+    }
+  },
+  "test_source3.tsv": {
+    "total_rows": 5082316,
+    "country_distribution": {
+      "India": 2405000,
+      "US": 1945701,
+      "France": 731615
+    }
+  }
+}
