@@ -150,7 +150,8 @@ def build_tfidf_candidates(s1_df, pool_df, top_k=50, sim_cutoff=0.2,
 
         vectorizer = TfidfVectorizer(
             analyzer=analyzer, ngram_range=ngram,
-            min_df=min_df, max_features=max_features, max_df=0.5
+            min_df=min_df, max_features=max_features, max_df=0.5,
+            dtype=np.float32
         )
         try:
             pool_tfidf = vectorizer.fit_transform(pool_docs)
@@ -222,9 +223,10 @@ def get_multi_pass_candidates(s1_df, pool_df, top_k=50, sim_cutoff1=0.2):
     cands1 = build_tfidf_candidates(
         s1_df, pool_df, top_k=top_k, sim_cutoff=sim_cutoff1,
         text_col='norm_name', analyzer='char_wb', ngram=(3, 3),
-        max_features=150000, min_df=2
+        max_features=80000, min_df=3
     )
     p1_time = time.time() - t0
+    gc.collect()
     print(f"    Done in {p1_time:.1f}s | Covered: {len(cands1)}")
 
     print("  [Blocking Pass 2] Word bigram TF-IDF on name+address...")
@@ -236,9 +238,10 @@ def get_multi_pass_candidates(s1_df, pool_df, top_k=50, sim_cutoff1=0.2):
     cands2 = build_tfidf_candidates(
         s1_tmp, pool_tmp, top_k=top_k, sim_cutoff=0.15,
         text_col='combined_text', analyzer='word', ngram=(1, 2),
-        max_features=100000, min_df=3
+        max_features=60000, min_df=4
     )
     del s1_tmp, pool_tmp
+    gc.collect()
     p2_time = time.time() - t0
     print(f"    Done in {p2_time:.1f}s | Covered: {len(cands2)}")
 
@@ -303,11 +306,14 @@ def run_improved_pipeline():
     print("IMPROVED ENTITY RESOLUTION PIPELINE")
     print("=" * 60)
 
+    TRAIN_S1_LIMIT  = 500_000   # cap S1 training rows to control RAM
+    POOL_LIMIT      = 600_000   # cap pool (S2+S3) per source
+
     print("\n[1] Loading training data...")
     t0 = time.time()
-    s1_train = pd.read_csv(os.path.join(TRAIN_DIR, 'train_source1.tsv'), sep='\t', dtype=str)
-    s2_train = pd.read_csv(os.path.join(TRAIN_DIR, 'train_source2.tsv'), sep='\t', dtype=str)
-    s3_train = pd.read_csv(os.path.join(TRAIN_DIR, 'train_source3.tsv'), sep='\t', dtype=str)
+    s1_train = pd.read_csv(os.path.join(TRAIN_DIR, 'train_source1.tsv'), sep='\t', dtype=str, nrows=TRAIN_S1_LIMIT)
+    s2_train = pd.read_csv(os.path.join(TRAIN_DIR, 'train_source2.tsv'), sep='\t', dtype=str, nrows=POOL_LIMIT)
+    s3_train = pd.read_csv(os.path.join(TRAIN_DIR, 'train_source3.tsv'), sep='\t', dtype=str, nrows=POOL_LIMIT)
     gt       = pd.read_csv(os.path.join(TRAIN_DIR, 'train_ground_truth.tsv'), sep='\t', dtype=str)
     load_time = time.time() - t0
     print(f"  Loaded in {load_time:.1f}s | S1={len(s1_train)}, S2={len(s2_train)}, S3={len(s3_train)}")
@@ -344,7 +350,7 @@ def run_improved_pipeline():
     s1_addr_map   = dict(zip(s1_train['entity_id'],  s1_train['norm_addr']))
 
     print("\n[4] Multi-pass blocking (train split)...")
-    train_candidates = get_multi_pass_candidates(train_s1_df, pool_train)
+    train_candidates = get_multi_pass_candidates(train_s1_df, pool_train, top_k=30)
 
     print("\n[5] Extracting training features...")
     t0 = time.time()
@@ -381,7 +387,7 @@ def run_improved_pipeline():
     gc.collect()
 
     print("\n[7] Multi-pass blocking (val split)...")
-    val_candidates = get_multi_pass_candidates(val_s1_df, pool_train)
+    val_candidates = get_multi_pass_candidates(val_s1_df, pool_train, top_k=30)
 
     true_matches_total, captured_total, zero_cand_count = 0, 0, 0
     for s1_id in val_s1_df['entity_id']:
@@ -439,7 +445,7 @@ def run_improved_pipeline():
 
     print("\n[8] Re-training on FULL training data...")
     print("  Multi-pass blocking on full train...")
-    full_candidates = get_multi_pass_candidates(s1_train, pool_train)
+    full_candidates = get_multi_pass_candidates(s1_train, pool_train, top_k=30)
 
     print("  Extracting full train features...")
     t0 = time.time()
